@@ -20,17 +20,17 @@ os.chdir("/home/noam/bin/art_or_trash/")
 
 
 class ArtDataset(Dataset):
-    def __init__(self, csv_filepath, transforms):
+    def __init__(self, csv_filepath, img_dir, transforms):
         """create dataframe, image and label arrays, and calculate data length"""
         self.transforms = transforms
-
         self.df = self.process_csv(csv_filepath)
-        self.image_array = np.asarray(self.df['full_path'])
+        self.img_dir = img_dir
+        self.image_array = np.asarray(self.df['img_fn'])
         self.label_array = np.asarray(self.df['label'])
         self.data_len = len(self.df.index)
     def __getitem__(self, index):
         """apply transform and return image and corresponding label"""
-        single_image_name = self.image_array[index]
+        single_image_name = self.img_dir + self.image_array[index]
         single_image_label = self.label_array[index]
 
         img_as_img = Image.open(single_image_name).convert('RGB')
@@ -47,6 +47,11 @@ class ArtDataset(Dataset):
         # read in csv
         self.df = pd.read_csv(csv_filepath, sep = "\t")
 
+        # create parse filenames
+        self.df['img_fn'] = self.df.apply(
+            lambda x : x['HTML'].split('/')[-1].replace('.html','.jpg'),
+            axis = 1)
+
         # embed categories to numeric
         self.embed = {j:i for (i,j) in enumerate(set(self.df['TYPE']))}
 
@@ -55,12 +60,14 @@ class ArtDataset(Dataset):
 
         return self.df
 
-csv = "data/current_catalog_min.tab"
+csv = "data/current_catalog.tab"
+img_dir = "img/train/"
+
 transform = transforms.Compose([
     transforms.Resize((300,300)),
     transforms.ToTensor(),
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-art_dataset = ArtDataset(csv, transform)
+art_dataset = ArtDataset(csv, img_dir, transform)
 art_dataset_loader = torch.utils.data.DataLoader(
     dataset=art_dataset,
     batch_size = 10,
