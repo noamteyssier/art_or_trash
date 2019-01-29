@@ -3,7 +3,6 @@
 from bs4 import BeautifulSoup as bs
 from urllib.request import urlopen, urlparse, urlunparse,urlretrieve
 import pandas as pd
-import cv2
 import os
 import sys
 
@@ -25,6 +24,6 @@ def download_picture(x, out_folder) :
 def print_row(x):
     print(x.URL)
 
-out_folder = '/home/noam/bin/ML/art_or_trash/img/'
-cat = pd.read_csv("/home/noam/bin/ML/art_or_trash/data/catalog_min.tab", sep='\t')
+out_folder = '/home/noam/bin/art_or_trash/img/unscaled/'
+cat = pd.read_csv("/home/noam/bin/art_or_trash/data/catalog_mini.tab", sep='\t')
 cat['name'] = cat.apply(lambda x : download_picture(x, out_folder), axis = 1)

@@ -16,7 +16,7 @@ from PIL import Image
 
 
 # set dir
-os.chdir("/home/noam/bin/ML/art_or_trash/")
+os.chdir("/home/noam/bin/art_or_trash/")
 
 
 class ArtDataset(Dataset):
