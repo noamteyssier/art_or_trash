@@ -133,7 +133,7 @@ def train(net, device, art_dataset_loader, optimizer, criterion):
 
 def main():
     csv = "data/current_catalog.tab"
-    img_dir = "img/test/"
+    img_dir = "img/set/"
 
     transform = transforms.Compose([
         transforms.Resize((128,128)),
