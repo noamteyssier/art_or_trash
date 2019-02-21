@@ -174,7 +174,9 @@ def main():
     #####################
 
     train(net, device, art_dataset_loader, optimizer, criterion)
-    torch.save(net.state_dict(), "/home/noam/bin/art_or_trash/aot.mdl")
+    path =  "/home/noam/bin/art_or_trash/aot.mdl"
+    torch.save(net.state_dict(), path)
+    net.load_state_dict(torch.load(path))
 
     ####################
     # Test the Network #
