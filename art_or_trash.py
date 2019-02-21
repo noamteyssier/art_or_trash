@@ -132,7 +132,7 @@ def train(net, device, art_dataset_loader, optimizer, criterion):
         print('Finished Epoch : %i' %epoch)
 
 def main():
-    csv = "data/current_catalog.tab"
+    csv = "data/subset_catalog.tab"
     img_dir = "img/set/"
 
     transform = transforms.Compose([
@@ -174,6 +174,7 @@ def main():
     #####################
 
     train(net, device, art_dataset_loader, optimizer, criterion)
+    torch.save(net.state_dict(), "/home/noam/bin/art_or_trash/aot.mdl")
 
     ####################
     # Test the Network #
@@ -202,6 +203,23 @@ def main():
     print('Accuracy of the network on the 10000 test images %d %%' %(
         100 * correct / total))
 
+    # what are the classes that performed well, and the classes that didnt?
+    class_correct = list(0. for _ in range(5))
+    class_total = list(0. for _ in range(5))
+    with torch.no_grad():
+        for data in test_dataset_loader:
+            images, labels = [i.to(device) for i in data]
+            outputs = net(images)
+            _, predicted = torch.max(outputs, 1)
+            c = (predicted == labels).squeeze()
+            for i in range(len(labels)):
+                label = labels[i]
+                class_correct[label] += c[i].item()
+                class_total[label] += 1
+
+    for i in range(5):
+        print('Accuracy of %5s : %2d %%' % (
+            art_dataset.debed[i], 100 * class_correct[i] / class_total[i]))
 
 if __name__ == '__main__':
     main()
