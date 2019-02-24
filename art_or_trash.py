@@ -14,6 +14,7 @@ from torch.utils.data.dataset import Dataset
 from torch.utils.data.sampler import SubsetRandomSampler
 
 from PIL import Image
+import argparse
 
 
 # set dir
@@ -130,48 +131,36 @@ def train(net, device, art_dataset_loader, optimizer, criterion):
                 running_loss = 0.0
 
         print('Finished Epoch : %i' %epoch)
-def test(net, device, art_dataset_loader):
-    # let's see how the network performs on the whole dataset
+def test(net, device, art_dataset, test_dataset_loader):
+    # what are the classes that performed well, and the classes that didnt?
+    class_correct = list(0. for _ in range(5))
+    class_total = list(0. for _ in range(5))
     correct = 0
     total = 0
     with torch.no_grad():
         for data in test_dataset_loader:
             images, labels = [i.to(device) for i in data]
             outputs = net(images)
-            _,predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
-
-    print('Accuracy of the network on the 10000 test images %d %%' %(
-        100 * correct / total))
-def class_test(net, device, art_dataset_loader):
-    # what are the classes that performed well, and the classes that didnt?
-    class_correct = list(0. for _ in range(5))
-    class_total = list(0. for _ in range(5))
-    with torch.no_grad():
-        for data in test_dataset_loader:
-            images, labels = [i.to(device) for i in data]
-            outputs = net(images)
             _, predicted = torch.max(outputs, 1)
             c = (predicted == labels).squeeze()
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
             for i in range(len(labels)):
                 label = labels[i]
                 class_correct[label] += c[i].item()
                 class_total[label] += 1
 
+    print('Accuracy of the network on the 10000 test images %d %%' %(
+        100 * correct / total))
     for i in range(5):
         print('Accuracy of %5s : %2d %%' % (
             art_dataset.debed[i], 100 * class_correct[i] / class_total[i]))
-
-def main():
-    csv = "data/subset_catalog.tab"
-    img_dir = "img/set/"
-
+def train_model(catalog, img_dir, transform, net, device, path):
     transform = transforms.Compose([
         transforms.Resize((128,128)),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    art_dataset = ArtDataset(csv, img_dir, transform)
+    art_dataset = ArtDataset(catalog, img_dir, transform)
     train_indices, test_indices = art_dataset.split_dataset(0.3)
     train_sampler = SubsetRandomSampler(train_indices)
     test_sampler = SubsetRandomSampler(test_indices)
@@ -179,33 +168,60 @@ def main():
     art_dataset_loader = torch.utils.data.DataLoader(
         dataset=art_dataset,
         batch_size = 4, num_workers = 2,
-        sampler=train_sampler
-        )
+        sampler=train_sampler)
     test_dataset_loader = torch.utils.data.DataLoader(
         dataset=art_dataset,
         batch_size = 4, num_workers = 2,
-        sampler=test_sampler
-        )
-
-
-    net = Net()
-
-    # transfer network to gpu
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    net.to(device)
+        sampler=test_sampler)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr = 0.001, momentum = 0.9)
-
-
     train(net, device, art_dataset_loader, optimizer, criterion)
-    path =  "/home/noam/bin/art_or_trash/aot.mdl"
+    test(net, device, art_dataset, test_dataset_loader)
     torch.save(net.state_dict(), path)
+def test_image(net, device, transform, art_dataset, image_fn):
+    image = transform(Image.open(image_fn).convert('RGB'))
+    images = [image.to(device) for _ in range(4)]
+    images = torch.stack(images)
+    with torch.no_grad():
+        output = net(images)
+        _, predicted = torch.max(output, 1)
+        label = art_dataset.debed[int(predicted[0])]
+        print("Predicted : {0}".format(label))
+def get_args():
+    p = argparse.ArgumentParser()
+    p.add_argument("-i", '--image',
+        help="input image to test")
+    p.add_argument('-t', '--train', action='store_true',
+        help="training flag to retrain model")
+    args = p.parse_args()
+    return args
 
-    net.load_state_dict(torch.load(path))
 
-    test(net, device, test_dataset_loader)
-    class_test(net, device, test_dataset_loader)
+
+def main():
+    catalog = "data/subset_catalog.tab"
+    img_dir = "img/set/"
+    path = "aot.mdl"
+
+    args = get_args()
+
+    transform = transforms.Compose([
+        transforms.Resize((128,128)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    art_dataset = ArtDataset(catalog, img_dir, transform)
+    net = Net().to(device)
+    net.to(device)
+
+    if args.train:
+        train_model(catalog, img_dir, transform, net, device, path)
+    if args.image:
+        net.load_state_dict(torch.load(path))
+        test_image(net, device, transform, art_dataset, args.image)
+
+
 
 
 if __name__ == '__main__':
