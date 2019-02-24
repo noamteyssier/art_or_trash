@@ -130,6 +130,38 @@ def train(net, device, art_dataset_loader, optimizer, criterion):
                 running_loss = 0.0
 
         print('Finished Epoch : %i' %epoch)
+def test(net, device, art_dataset_loader):
+    # let's see how the network performs on the whole dataset
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for data in test_dataset_loader:
+            images, labels = [i.to(device) for i in data]
+            outputs = net(images)
+            _,predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+
+    print('Accuracy of the network on the 10000 test images %d %%' %(
+        100 * correct / total))
+def class_test(net, device, art_dataset_loader):
+    # what are the classes that performed well, and the classes that didnt?
+    class_correct = list(0. for _ in range(5))
+    class_total = list(0. for _ in range(5))
+    with torch.no_grad():
+        for data in test_dataset_loader:
+            images, labels = [i.to(device) for i in data]
+            outputs = net(images)
+            _, predicted = torch.max(outputs, 1)
+            c = (predicted == labels).squeeze()
+            for i in range(len(labels)):
+                label = labels[i]
+                class_correct[label] += c[i].item()
+                class_total[label] += 1
+
+    for i in range(5):
+        print('Accuracy of %5s : %2d %%' % (
+            art_dataset.debed[i], 100 * class_correct[i] / class_total[i]))
 
 def main():
     csv = "data/subset_catalog.tab"
@@ -157,71 +189,24 @@ def main():
 
 
     net = Net()
+
     # transfer network to gpu
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     net.to(device)
 
-
-    ########################################
-    # Define a Loss Function and Optimizer #
-    ########################################
-
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr = 0.001, momentum = 0.9)
 
-    #####################
-    # Train the Network #
-    #####################
 
     train(net, device, art_dataset_loader, optimizer, criterion)
     path =  "/home/noam/bin/art_or_trash/aot.mdl"
     torch.save(net.state_dict(), path)
+
     net.load_state_dict(torch.load(path))
 
-    ####################
-    # Test the Network #
-    ####################
+    test(net, device, test_dataset_loader)
+    class_test(net, device, test_dataset_loader)
 
-    dataiter = iter(test_dataset_loader)
-    images, labels = dataiter.next()
-    imshow(torchvision.utils.make_grid(images))
-    print(' '.join('%5s' % art_dataset.debed[int(labels[j])] for j in range(4)))
-    outputs = net(images.to(device))
-    _, predicted = torch.max(outputs, 1)
-
-    print('Predicted: ', ' '.join('%5s' % art_dataset.debed[int(predicted[j])] for j in range(4)))
-
-    # let's see how the network performs on the whole dataset
-    correct = 0
-    total = 0
-    with torch.no_grad():
-        for data in test_dataset_loader:
-            images, labels = [i.to(device) for i in data]
-            outputs = net(images)
-            _,predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
-
-    print('Accuracy of the network on the 10000 test images %d %%' %(
-        100 * correct / total))
-
-    # what are the classes that performed well, and the classes that didnt?
-    class_correct = list(0. for _ in range(5))
-    class_total = list(0. for _ in range(5))
-    with torch.no_grad():
-        for data in test_dataset_loader:
-            images, labels = [i.to(device) for i in data]
-            outputs = net(images)
-            _, predicted = torch.max(outputs, 1)
-            c = (predicted == labels).squeeze()
-            for i in range(len(labels)):
-                label = labels[i]
-                class_correct[label] += c[i].item()
-                class_total[label] += 1
-
-    for i in range(5):
-        print('Accuracy of %5s : %2d %%' % (
-            art_dataset.debed[i], 100 * class_correct[i] / class_total[i]))
 
 if __name__ == '__main__':
     main()
