@@ -100,8 +100,8 @@ def imshow(img):
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
-def train(net, device, art_dataset_loader, optimizer, criterion):
-    for epoch in range(20) :     # loop over the dataset multiple times
+def train(net, device, art_dataset_loader, optimizer, criterion, iterations):
+    for epoch in range(iterations) :     # loop over the dataset multiple times
 
         running_loss = 0.0
         for i, data in enumerate(art_dataset_loader, 0):
@@ -176,7 +176,7 @@ def train_model(catalog, img_dir, transform, net, device, args):
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr = args.learning_rate, momentum = args.momentum)
-    train(net, device, art_dataset_loader, optimizer, criterion)
+    train(net, device, art_dataset_loader, optimizer, criterion, args.iterations)
     test(net, device, art_dataset, test_dataset_loader, args.path)
     torch.save(net.state_dict(), args.path)
 def test_image(net, device, transform, art_dataset, image_fn):
@@ -210,8 +210,6 @@ def get_args():
 def main():
     catalog = "data/mini_subset_catalog.tab"
     img_dir = "img/set/"
-    path = "aot_2.mdl"
-
     args = get_args()
 
     transform = transforms.Compose([

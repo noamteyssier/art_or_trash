@@ -1,0 +1,6 @@
+Accuracy of the network on the 10000 test images 29 %
+Accuracy of portrait :  0 %
+Accuracy of landscape :  2 %
+Accuracy of still-life :  0 %
+Accuracy of trash : 100 %
+Accuracy of watercolor :  1 %
