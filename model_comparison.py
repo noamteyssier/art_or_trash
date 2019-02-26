@@ -16,10 +16,6 @@ def main():
     models.momentum = models.momentum.astype('float')
     models.overall_accuracy = models.overall_accuracy.astype('float')
 
-    g = sns.FacetGrid(data=models, col='momentum', row='learning_rate')
-    g.map(sns.lineplot('epoch', 'overall_accuracy'))
-
-    sns.scatterplot(data=models, x="epoch", y ='overall_accuracy')
     sns.relplot(data=models, x='epoch', y='overall_accuracy', col='learning_rate', kind='line')
     sns.relplot(data=models, x='epoch', y='overall_accuracy', col='momentum', kind='line')
     sns.relplot(data=models, x='epoch', y='overall_accuracy', row='learning_rate', col='momentum', kind='line')
