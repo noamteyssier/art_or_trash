@@ -18,11 +18,6 @@ import argparse
 import sys
 import os
 
-#### NOTES
-# add optional training set split amount
-
-
-
 # set dir
 os.chdir("/home/noam/bin/art_or_trash/")
 
