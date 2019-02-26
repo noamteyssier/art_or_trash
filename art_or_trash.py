@@ -116,7 +116,6 @@ class AOT():
         self.__init_art_dataset_loaders__()
         self.__init_criterion__()
         self.__init_optimizer__()
-
     def __init_network__(self):
         """initialize network and move to device"""
         self.net = Net().to(self.device)
@@ -295,7 +294,6 @@ def main():
     aot = AOT(args)
     if args.train:
         aot.train()
-
     if args.image:
         aot.load_model_params()
         aot.test_image()
