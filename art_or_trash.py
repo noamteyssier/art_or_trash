@@ -2,20 +2,21 @@
 
 import torch
 import torchvision
-import torchvision.transforms as transforms
-import os
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import torchvision.transforms as transforms
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 from torch.utils.data.dataset import Dataset
 from torch.utils.data.sampler import SubsetRandomSampler
-
 from PIL import Image
+
 import argparse
 import sys
+import os
 
 #### NOTES
 # add optional training set split amount
@@ -137,17 +138,17 @@ class AOT():
         self.class_labels = [self.art_dataset.debed[i] for i in range(self.num_classes)]
 
         # split dataset randomly and create loaders
-        train_indices, test_indices = self.art_dataset.split_dataset(0.3)
+        train_indices, test_indices = self.art_dataset.split_dataset(self.args.train_split)
         train_sampler = SubsetRandomSampler(train_indices)
         test_sampler = SubsetRandomSampler(test_indices)
 
         self.train_loader = torch.utils.data.DataLoader(
             dataset=self.art_dataset,
-            batch_size = 4, num_workers = 2,
+            batch_size = 4, num_workers = 7,
             sampler=train_sampler)
         self.test_loader = torch.utils.data.DataLoader(
             dataset=self.art_dataset,
-            batch_size = 4, num_workers = 2,
+            batch_size = 4, num_workers = 7,
             sampler=test_sampler)
     def __init_criterion__(self):
         """initialize criterion for model training"""
@@ -266,6 +267,8 @@ def get_args():
         help = 'momentum of learning')
     p.add_argument('-e', '--epochs', default=20, type=int,
         help = 'number of epochs to iterate')
+    p.add_argument('-s', '--train_split', default=0.3, type=float,
+        help='percentage of the set to use for training')
     p.add_argument('-r', '--test_rate', default=5, type=int,
         help="number of epochs to test model with")
     p.add_argument('-p', '--path', default="INTERNAL",
@@ -300,8 +303,7 @@ def main():
 
     if args.image:
         aot.load_model_params()
-        # test_results = test_image(bet, device, transform, art_dataset, args.image)
-
+        aot.test_image()
 
 
 
