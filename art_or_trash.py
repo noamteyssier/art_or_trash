@@ -238,21 +238,22 @@ class AOT():
         results = pd.DataFrame(self.test_results)
         results.columns = ['epoch', 'learning_rate', 'momentum', 'overall_accuracy'] + self.class_labels
         results.to_csv(self.args.path.replace('.pt', '.log'), sep="\t", index=False)
+    def test_image(self):
+        """predict given image label"""
+        image = self.transform(Image.open(self.args.image).convert('RGB'))
+        images = [image.to(self.device) for _ in range(4)]
+        images = torch.stack(images)
+        with torch.no_grad():
+            output = self.net(images)
+            _, predicted = torch.max(output, 1)
+            label = self.class_labels[int(predicted[0])]
+            print("Predicted : {0}".format(label))
 
 def imshow(img):
     img = img / 2 + 0.5     # unnormalize
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
-def test_image(net, device, transform, art_dataset, image_fn):
-    image = transform(Image.open(image_fn).convert('RGB'))
-    images = [image.to(device) for _ in range(4)]
-    images = torch.stack(images)
-    with torch.no_grad():
-        output = net(images)
-        _, predicted = torch.max(output, 1)
-        label = art_dataset.debed[int(predicted[0])]
-        print("Predicted : {0}".format(label))
 def get_args():
     p = argparse.ArgumentParser()
     p.add_argument("-i", '--image',
