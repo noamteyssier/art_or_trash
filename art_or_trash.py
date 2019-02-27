@@ -296,7 +296,6 @@ def main():
     aot = AOT(args)
     if args.train:
         aot.train()
-
     if args.image:
         aot.load_model_params()
         aot.test_image()
