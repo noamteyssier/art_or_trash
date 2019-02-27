@@ -116,7 +116,6 @@ class AOT():
         self.__init_art_dataset_loaders__()
         self.__init_criterion__()
         self.__init_optimizer__()
-
     def __init_network__(self):
         """initialize network and move to device"""
         self.net = Net().to(self.device)
@@ -158,6 +157,12 @@ class AOT():
         """modify arguments to reflect model defaults"""
         if self.args.path == 'INTERNAL' :
             self.args.path = "models/mdl_{0}lr_{1}m.pt".format(self.args.learning_rate, self.args.momentum)
+    def __imshow__(self, img):
+        """matplotlib image"""
+        img = img / 2 + 0.5     # unnormalize
+        npimg = img.numpy()
+        plt.imshow(np.transpose(npimg, (1, 2, 0)))
+        plt.show()
     def save_model_params(self):
         """save model parameters to path specified"""
         torch.save(self.net.state_dict(), self.args.path)
@@ -244,12 +249,8 @@ class AOT():
             _, predicted = torch.max(output, 1)
             label = self.class_labels[int(predicted[0])]
             print("Predicted : {0}".format(label))
+        self.__imshow__(image)
 
-def imshow(img):
-    img = img / 2 + 0.5     # unnormalize
-    npimg = img.numpy()
-    plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.show()
 def get_args():
     p = argparse.ArgumentParser()
     p.add_argument("-i", '--image',
