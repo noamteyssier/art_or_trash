@@ -1,10 +1,10 @@
 # Art or Trash?
 
+**Predicted : trash**
 ![](img/for_readme/test_trash.png)
-** Predicted : trash **
 
+**Predicted : abstract**
 ![](img/for_readme/random_earthview.png)
-** Predicted : abstract **
 
 
 Can that age old question of art or trash be settled with a convolutional neural network?
