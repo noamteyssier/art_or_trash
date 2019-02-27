@@ -251,6 +251,16 @@ class AOT():
             print("Predicted : {0}".format(label))
         self.__imshow__(image)
 
+def optimize_hyperparams(args):
+    l_list = [0.0001, 0.0005, 0.001, 0.005, 0.01]
+    m_list = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    for l in l_list:
+        for m in m_list:
+            args.learning_rate = l
+            args.momentum = m
+            args.path = 'INTERNAL'
+            a = AOT(args)
+            a.train()
 def get_args():
     p = argparse.ArgumentParser()
     p.add_argument("-i", '--image',
@@ -259,13 +269,13 @@ def get_args():
         help="training flag to retrain model")
     p.add_argument('-l', '--learning_rate', default = 0.001, type=float,
         help='learning rate of the model training')
-    p.add_argument('-m', '--momentum', default=0.9, type=float,
+    p.add_argument('-m', '--momentum', default=0.8, type=float,
         help = 'momentum of learning')
-    p.add_argument('-e', '--epochs', default=20, type=int,
+    p.add_argument('-e', '--epochs', default=15, type=int,
         help = 'number of epochs to iterate')
     p.add_argument('-s', '--train_split', default=0.3, type=float,
         help='percentage of the set to use for training')
-    p.add_argument('-r', '--test_rate', default=5, type=int,
+    p.add_argument('-r', '--test_rate', default=1, type=int,
         help="number of epochs to test model with")
     p.add_argument('-p', '--path', default="INTERNAL",
         help="path to save model to or load from")
@@ -283,19 +293,13 @@ def main():
     args = get_args()
 
     if args.optimize:
-        l_list = [0.0001, 0.0005, 0.001, 0.005, 0.01]
-        m_list = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-        for l in l_list:
-            for m in m_list:
-                args.learning_rate = l
-                args.momentum = m
-                args.path = 'INTERNAL'
-                a = AOT(args)
-                a.train()
+        optimize_hyperparams(args)
+        return 0
 
     aot = AOT(args)
     if args.train:
         aot.train()
+
     if args.image:
         aot.load_model_params()
         aot.test_image()
