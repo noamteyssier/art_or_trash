@@ -13,7 +13,7 @@ Surely all matters regarding implicit beauty or the subjectivity of human percep
 I've trained a CNN on a large set of artworks of various genres and a swarm of the trashiest of internet trash memes. If you can trust google's definition of artwork genres, and you can trust that internet trash is in fact trash then you are in the right place
 
 ## Who would make something like this?
-I believe that random google earth photography is incredibly beautiful and something I personally would consider art. I could only agree with others that memes are trash, and that art is not generally trash. To prove my point I need only to show that these images are more closely related to artwork than they are internet trash memes.
+I believe that random google earth photography is incredibly beautiful and something I personally would consider art. I could only agree with others that memes are trash, and that art is not generally trash. To prove my point I need only to show that these images are more closely related to artwork than they are internet trash memes. (There are no google earth landscape photography images used in the training of this CNN)
 
 ##  Fine, how do I use it?
 ```bash
